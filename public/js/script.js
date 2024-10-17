@@ -11,13 +11,6 @@ async function submitLogin(event) {
         loginStatusBox.style.display = "none";
         return;
     }
-
-    if (password.length !== 13) {
-        errorMessage.textContent = 'Please enter your password correctly.';
-        loginStatusBox.style.display = "none";
-        return;
-    }
-
     try {
         const response = await fetch('https://restapi.tu.ac.th/api/v1/auth/Ad/verify', {
             method: 'POST',
