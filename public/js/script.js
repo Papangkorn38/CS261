@@ -5,34 +5,55 @@ async function submitLogin(event) {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const loginStatusBox = document.getElementById('loginStatus');
-    
-    await fetch('https://restapi.tu.ac.th/api/v1/auth/Ad/verify', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            "Application-Key":"TU5d5d94a81ddf8180ba59b909802b958f0852358099894bc088730fe4af356cd848b499af6acfc1ee2a1ccb8c9b37144a",
-        },
-        body: JSON.stringify({ UserName: username, PassWord: password })
-    })
-    .then(response => response.json())
-    .then(data => {
+    const errorMessage = document.getElementById('errorMessage'); 
+    if (username.length !== 10) {
+        errorMessage.textContent = 'Please enter your username correctly.';
+        loginStatusBox.style.display = "none";
+        return;
+    }
+
+    if (password.length !== 13) {
+        errorMessage.textContent = 'Please enter your password correctly.';
+        loginStatusBox.style.display = "none";
+        return;
+    }
+
+    try {
+        const response = await fetch('https://restapi.tu.ac.th/api/v1/auth/Ad/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Application-Key": "TU5d5d94a81ddf8180ba59b909802b958f0852358099894bc088730fe4af356cd848b499af6acfc1ee2a1ccb8c9b37144a",
+            },
+            body: JSON.stringify({ UserName: username, PassWord: password })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
         if (data.tu_status && data.displayname_th && data.displayname_en && data.email && data.department && data.faculty) {
             loginStatusBox.innerHTML = `
-                <p><strong>Name (EN):</strong> ${data.displayname_en}</p>
-                <p><strong>ชื่อ (ภาษาไทย):</strong> ${data.displayname_th}</p>
+                <p><strong>Name:</strong> ${data.displayname_en}</p>
+                <p><strong>ชื่อ:</strong> ${data.displayname_th}</p>
                 <p><strong>Email:</strong> ${data.email}</p>
                 <p><strong>Faculty:</strong> ${data.faculty}</p>
                 <p><strong>Department:</strong> ${data.department}</p>
+                <p><strong>Type:</strong> ${data.type}</p>
                 <p><strong>StudentID:</strong> ${data.username}</p>
             `;
         } else {
             loginStatusBox.innerHTML = `<p>Login successful, but some information is missing from the response.</p>`;
         }
 
-        loginStatusBox.style.display = "flex";
-    })
-    .catch(error => console.error('Error:', error));
+        errorMessage.textContent = ''; 
+        loginStatusBox.style.display = "block";
+    } catch (error) {
+        console.error('Error:', error);
+        loginStatusBox.style.display = "none"; 
+        errorMessage.textContent = 'An error occurred while fetching data. Please try again later.';
+    }
 }
 
-form.addEventListener('submit', submitLogin)
-
+form.addEventListener('submit', submitLogin);
