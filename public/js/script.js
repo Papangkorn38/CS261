@@ -37,7 +37,7 @@ async function submitLogin(event) {
                 <p><strong>StudentID:</strong> ${data.username}</p>
             `;
         } else {
-            loginStatusBox.innerHTML = `<p>Login successful, but some information is missing from the response.</p>`;
+            loginStatusBox.innerHTML = `<p>Login successful, but certain information wasn't provided.</p>`;
         }
 
         errorMessage.textContent = ''; 
