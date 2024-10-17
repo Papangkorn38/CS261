@@ -52,7 +52,7 @@ async function submitLogin(event) {
     } catch (error) {
         console.error('Error:', error);
         loginStatusBox.style.display = "none"; 
-        errorMessage.textContent = 'An error occurred while fetching data. Please try again later.';
+        errorMessage.textContent = 'Your Username or Password is not correct. Please try again.';
     }
 }
 
