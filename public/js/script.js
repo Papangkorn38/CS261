@@ -1,35 +1,52 @@
-function submitLogin() {
+const form = document.getElementById("login-form")
+
+async function submitLogin(event) {
+    event.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    const loginStatusBox = document.getElementById('loginStatus');
+    const errorMessage = document.getElementById('errorMessage'); 
+    if (username.length !== 10) {
+        errorMessage.textContent = 'Please enter your username correctly.';
+        loginStatusBox.style.display = "none";
+        return;
+    }
+    try {
+        const response = await fetch('https://restapi.tu.ac.th/api/v1/auth/Ad/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Application-Key": "TU5d5d94a81ddf8180ba59b909802b958f0852358099894bc088730fe4af356cd848b499af6acfc1ee2a1ccb8c9b37144a",
+            },
+            body: JSON.stringify({ UserName: username, PassWord: password })
+        });
 
-    fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('message').innerText = data.message;
-    })
-    .catch(error => console.error('Error:', error));
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        if (data.tu_status && data.displayname_th && data.displayname_en && data.email && data.department && data.faculty) {
+            loginStatusBox.innerHTML = `
+                <p><strong>Name:</strong> ${data.displayname_en}</p>
+                <p><strong>ชื่อ:</strong> ${data.displayname_th}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Faculty:</strong> ${data.faculty}</p>
+                <p><strong>Department:</strong> ${data.department}</p>
+                <p><strong>Type:</strong> ${data.type}</p>
+                <p><strong>StudentID:</strong> ${data.username}</p>
+            `;
+        } else {
+            loginStatusBox.innerHTML = `<p>Login successful, but certain information wasn't provided.</p>`;
+        }
+
+        errorMessage.textContent = ''; 
+        loginStatusBox.style.display = "block";
+    } catch (error) {
+        console.error('Error:', error);
+        loginStatusBox.style.display = "none"; 
+        errorMessage.textContent = 'Your Username or Password is not correct. Please try again.';
+    }
 }
 
-
-
-function call_REST_API_Hello() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    const url = (
-        'http://localhost:8080/hello?' +
-        new URLSearchParams({ myName: username, lastName: password}).toString()
-      );
-    
-    fetch(url)
-    .then(data => {
-        document.getElementById('message').innerText = data.message;
-    })
-    .catch(error => console.error('Error:', error));
-}
+form.addEventListener('submit', submitLogin);
